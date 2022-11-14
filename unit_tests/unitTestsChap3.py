@@ -48,7 +48,7 @@ def test_update_fx():
     # get update results
     mav.update(forces_moments)  # propagate the MAV dynamics
     #compare against true values
-    assert np.allclose(mav._state, trueValues.state_fx,atol=0.3)
+    assert np.allclose(mav._state, trueValues.state_fx)
 
 
 # check fy
@@ -80,7 +80,7 @@ def test_update_fy():
     # get update results
     mav.update(forces_moments)  # propagate the MAV dynamics
     #compare against true values
-    assert np.allclose(mav._state, trueValues.state_fy, atol=0.3)
+    assert np.allclose(mav._state, trueValues.state_fy)
 
 
 # check fz
@@ -112,7 +112,7 @@ def test_update_fz():
     # get update results
     mav.update(forces_moments)  # propagate the MAV dynamics
     #compare against true values
-    assert np.allclose(mav._state, trueValues.state_fz, atol=0.3)
+    assert np.allclose(mav._state, trueValues.state_fz)
 
 # check Mx
 def test_derivative_Mx():
@@ -143,7 +143,7 @@ def test_update_Mx():
     # get update results
     mav.update(forces_moments)  # propagate the MAV dynamics
     #compare against true values
-    assert np.allclose(mav._state, trueValues.state_Mx, atol = 0.3)
+    assert np.allclose(mav._state, trueValues.state_Mx)
 
 
 # check My
@@ -175,7 +175,7 @@ def test_update_My():
     # get update results
     mav.update(forces_moments)  # propagate the MAV dynamics
     #compare against true values
-    assert np.allclose(mav._state, trueValues.state_My, atol = 0.3)
+    assert np.allclose(mav._state, trueValues.state_My)
 
 
 # check Mz
@@ -207,7 +207,7 @@ def test_update_Mz():
     # get update results
     mav.update(forces_moments)  # propagate the MAV dynamics
     #compare against true values
-    assert np.allclose(mav._state, trueValues.state_Mz, atol = 0.3)
+    assert np.allclose(mav._state, trueValues.state_Mz)
 # test_update_Mz()
 # test_derivative_fx()
 # test_update_fx()
