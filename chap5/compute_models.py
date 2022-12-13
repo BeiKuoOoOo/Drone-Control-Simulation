@@ -85,7 +85,6 @@ def compute_model(mav, trim_state, trim_input):
 
 
 def compute_tf_model(mav, trim_state, trim_input):
-    # trim values
     mav._state = trim_state
     mav._update_velocity_data()
     Va_trim = mav._Va
@@ -93,16 +92,18 @@ def compute_tf_model(mav, trim_state, trim_input):
     phi, theta_trim, psi = Quaternion2Euler(trim_state[6:10])
 
     # define transfer function constants
-    a_phi1 = -0.5 * MAV.rho * Va_trim ** 2 * MAV.S_wing * MAV.b * MAV.C_p_p * MAV.b / 2 / Va_trim
-    a_phi2 = 0.5 * MAV.rho * Va_trim ** 2 * MAV.S_wing * MAV.b * MAV.C_p_delta_a
-    a_theta1 = - MAV.rho * Va_trim ** 2 * MAV.S_wing * MAV.c / (2 * MAV.Jy) * MAV.C_m_q * MAV.c / 2 / Va_trim
-    a_theta2 = - MAV.rho * Va_trim ** 2 * MAV.S_wing * MAV.c / (2 * MAV.Jy) * MAV.C_m_alpha
-    a_theta3 = MAV.rho * Va_trim ** 2 * MAV.S_wing * MAV.c / (2 * MAV.Jy) * MAV.C_m_delta_e
+    a_phi1 = -(MAV.rho*Va_trim**2*MAV.S_wing*MAV.b/2) * MAV.C_p_p * MAV.b/(2*Va_trim)
+    a_phi2 = (MAV.rho*Va_trim**2*MAV.S_wing*MAV.b/2) * MAV.C_p_delta_a
+
+    a_theta1 = -(MAV.rho*Va_trim**2*MAV.c*MAV.S_wing/(2*MAV.Jy)) * MAV.C_m_q * MAV.c / (2*Va_trim)
+    a_theta2 = -(MAV.rho*Va_trim**2*MAV.c*MAV.S_wing/(2*MAV.Jy)) * MAV.C_m_alpha
+    a_theta3 = (MAV.rho*Va_trim**2*MAV.c*MAV.S_wing/(2*MAV.Jy)) * MAV.C_m_delta_e
 
     # Compute transfer function coefficients using new propulsion model
-    a_V1 = coef.a_V1
-    a_V2 = coef.a_V2
-    a_V3 = coef.a_V3
+    a_V1 = MAV.rho*Va_trim*MAV.S_wing/MAV.mass * (MAV.C_D_0 + MAV.C_D_alpha*alpha_trim + MAV.C_D_delta_e*trim_input.elevator) \
+        - (1/MAV.mass) * dT_dVa(mav, Va_trim, trim_input.throttle)
+    a_V2 = (1/MAV.mass) * dT_ddelta_t(mav, Va_trim, trim_input.throttle)
+    a_V3 = MAV.gravity*np.cos(theta_trim-alpha_trim)
 
     return Va_trim, alpha_trim, theta_trim, a_phi1, a_phi2, a_theta1, a_theta2, a_theta3, a_V1, a_V2, a_V3
 
@@ -134,7 +135,7 @@ def quaternion_state(x_euler):
 def f_euler(mav, x_euler, delta):
     # return 12x1 dynamics (as if state were Euler state)
     # compute f at euler_state
-    
+
     f_euler_ = 1
     return f_euler_
 
@@ -152,14 +153,14 @@ def df_du(mav, x_euler, delta):
 
 def dT_dVa(mav, Va, delta_t):
     # returns the derivative of motor thrust with respect to Va
-    eps = 1
-    T_eps, Q_eps = mav._motor_thrust_torque()
-    T, Q = mav._motor_thrust_torque()
+    eps = 0.001
+    T_eps, Q_eps = mav._motor_thrust_torque(Va + eps, delta_t)
+    T, Q = mav._motor_thrust_torque(Va, delta_t)
     return (T_eps - T) / eps
 
 def dT_ddelta_t(mav, Va, delta_t):
     # returns the derivative of motor thrust with respect to delta_t
-    eps = 1
-    T_eps, Q_eps = mav._motor_thrust_torque()
-    T, Q = mav._motor_thrust_torque()
+    eps = 0.001
+    T_eps, Q_eps = mav._motor_thrust_torque(Va + eps, delta_t)
+    T, Q = mav._motor_thrust_torque(Va, delta_t)
     return (T_eps - T) / eps
